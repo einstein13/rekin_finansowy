@@ -11,6 +11,9 @@ class Game(models.Model):
     link = models.CharField(max_length=15, blank=True, null=True, unique=True)
     start_date = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return "Game_%02d (%s)" % (self.pk, self.link)
+
     def save(self, *args, **kwargs):
         if self.link is None:
             self.link = self.generate_link()
@@ -42,12 +45,18 @@ class Player(models.Model):
     game = models.ForeignKey('Game', on_delete=models.CASCADE,
             related_name='players')
 
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.game.link)
+
 
 class Turn(models.Model):
 
     number = models.IntegerField(default=1)
     game = models.ForeignKey('Game', on_delete=models.CASCADE,
             related_name='turns')
+
+    def __str__(self):
+        return "Turn %02d (%s)" % (self.number, self.game.link)
 
 
 class Share(models.Model):
@@ -67,6 +76,9 @@ class Share(models.Model):
     profit_2down = models.IntegerField()
     profit_3down = models.IntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class Stock(models.Model):
 
@@ -78,13 +90,17 @@ class Stock(models.Model):
             related_name='stocks')
     amount = models.IntegerField(default=0)
 
+    def __str__(self):
+        return "%s [%s: %d] (%02d)" % (self.player.name, self.share.name,\
+                                        self.amount, self.turn.number)
+
 
 class Forecast(models.Model):
 
     turn = models.ForeignKey('Turn', on_delete=models.CASCADE,
             related_name='forecasts')
-    all_company = models.ForeignKey('Share', on_delete=models.CASCADE,
-            related_name='forecast0')
+    # all_company = models.ForeignKey('Share', on_delete=models.CASCADE,
+    #         related_name='forecast0')
     main_company = models.ForeignKey('Share', on_delete=models.CASCADE,
             related_name='forecast1')
     secondary_company = models.ForeignKey('Share', on_delete=models.CASCADE,
@@ -92,3 +108,6 @@ class Forecast(models.Model):
     all_forecast = models.IntegerField(default=0)
     main_forecast = models.IntegerField(default=0)
     secondary_forecast = models.IntegerField(default=0)
+
+    def __str__(self):
+        return "%s - %02d" % (self.turn.game.link, self.turn.number)
