@@ -16,6 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from calculator.views import Home, StartGame, TurnCalculator, GameEnd
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', Home.as_view(), name='home'),
+    path('start', StartGame.as_view(), name='start'),
+    path('turn', TurnCalculator.as_view(), name='turn'),
+    path('finish', GameEnd.as_view(), name='finish'),
 ]

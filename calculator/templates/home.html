@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Witaj w kalkulatorze do gry Rekin Finansowy</h1>
+    <form action="{% url 'start' %}" method="POST">
+        {% csrf_token %}
+        Ile graczy chce zagrać?<br>
+        <input type="number" name="players" min="2" max="6"><br>
+        <input type="submit" value="Zacznij!">
+    </form>
+
+{% endblock %}

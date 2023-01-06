@@ -1,0 +1,14 @@
+{% load static %}
+<html>
+    <head>
+        <title>
+            {% block title %}Rekin Finansowy{% endblock %}
+        </title>
+        <!-- <script src="{% static "" %}"></script> -->
+        {% block head_custom %}{% endblock %}
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+        {% block js_dynamic %}{% endblock %}
+    </body>
+</html>

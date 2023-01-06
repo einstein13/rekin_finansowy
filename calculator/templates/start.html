@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Jak się nazywają gracze?</h1>
+    <form action="{% url 'turn' %}" method="POST">
+        {% csrf_token %}
+        {% for itr in range %}
+            Gracz {{ itr }}: <input type="text" name="player_{{ itr }}"><br>
+        {% endfor %}
+        <input type="hidden" name="game_link" value="{{ game_link }}"><br>
+        <input type="submit" value="Rozpocznij grę!">
+    </form>
+
+{% endblock %}
