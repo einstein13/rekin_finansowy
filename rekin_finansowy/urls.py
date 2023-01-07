@@ -23,5 +23,6 @@ urlpatterns = [
     path('', Home.as_view(), name='home'),
     path('start', StartGame.as_view(), name='start'),
     path('turn', TurnCalculator.as_view(), name='turn'),
-    path('finish', GameEnd.as_view(), name='finish'),
+    path('turn/<str:game_link>', TurnCalculator.as_view(), name='restore'),
+    path('finish/<str:link>', GameEnd.as_view(), name='finish'),
 ]

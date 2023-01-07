@@ -1,1 +1,128 @@
 {% extends 'base.html' %}
+
+{% block content %}
+    <h1>Uzupełnij tabelę</h1>
+    <form action="{% url 'turn' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="game_link" value="{{ game_link }}">
+        <input type="hidden" name="turn" value="{{ turn.1 }}">
+        Gra: "{{ game.link }}"<br>
+        Runda: {{ turn.1 }}<br>
+        Akcje
+        <table border="1">
+            <tr>
+                <th>
+                    Akcje
+                </th>
+                {% for pl in players %}
+                    <th>
+                        {{ pl.1 }}
+                        <input type="hidden" name="player_{{ pl.0 }}" value="{{ pl.1 }}">
+                    </th>
+                {% endfor %}
+            </tr>
+            {% for stock in stocks %}
+                <tr>
+                    <td>
+                        {{ stock.0.name }}
+                    </td>
+                    {% for pldata in stock.1 %}
+                        <th>
+                            <input type="number" name="stock_{{ stock.0.pk }}_{{ pldata.0 }}" min=0 max=5
+                                value="{% if pldata.1 > 0 %}{{ pldata.1 }}{% endif %}">
+                        </th>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            <tr>
+                <td><b>Balans</b></td>
+                {% for pl in players %}
+                    <th>
+                        {{ pl.3 }}
+                    </th>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><b>Wartość portfela</b></td>
+                {% for pl in players %}
+                    <th>
+                        {{ pl.4 }}
+                    </th>
+                {% endfor %}
+            </tr>
+        </table>
+        <br><br>
+
+        Prognoza
+        <table border="1">
+            <tr>
+                <td>
+                    Akcja 1
+                </td>
+                <td>
+                    <select name="main_forecast_share">
+                        {% for share in shares %}
+                            <option value="share.pk">{{ share.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="main_forecast_change">
+                        <option value="3">&#11014;</option>
+                        <option value="2">&uArr;</option>
+                        <option value="1">&uarr;</option>
+                        <option value="0" selected>&hArr;</option>
+                        <option value="-1">&darr;</option>
+                        <option value="-2">&dArr;</option>
+                        <option value="-3">&#11015;</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Akcja 2
+                </td>
+                <td>
+                    <select name="secondary_forecast_share">
+                        {% for share in shares %}
+                            <option value="share.pk">{{ share.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="secondary_forecast_change">
+                        <option value="3">&#11014;</option>
+                        <option value="2">&uArr;</option>
+                        <option value="1">&uarr;</option>
+                        <option value="0" selected>&hArr;</option>
+                        <option value="-1">&darr;</option>
+                        <option value="-2">&dArr;</option>
+                        <option value="-3">&#11015;</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    Pozostałe akcje
+                </td>
+                <td>
+                    <select name="all_forecast_change">
+                        <option value="3">&#11014;</option>
+                        <option value="2">&uArr;</option>
+                        <option value="1">&uarr;</option>
+                        <option value="0" selected>&hArr;</option>
+                        <option value="-1">&darr;</option>
+                        <option value="-2">&dArr;</option>
+                        <option value="-3">&#11015;</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+        <input type="checkbox" name="finish_turn" value="true"> Zakończ turę
+        <br><input type="submit" value="Oblicz">
+    </form>
+    <hr>
+    <a href="{% url 'finish' link=game_link %}">Zakończ grę</a>
+
+{% endblock %}
