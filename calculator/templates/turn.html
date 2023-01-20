@@ -43,10 +43,18 @@
                 {% endfor %}
             </tr>
             <tr>
-                <td><b>Wartość portfela</b></td>
+                <td><b>Wydano na akcje</b></td>
                 {% for pl in players %}
                     <th>
                         {{ pl.4 }}
+                    </th>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><b>Aktualna wartość</b></td>
+                {% for pl in players %}
+                    <th>
+                        {{ pl.5 }}
                     </th>
                 {% endfor %}
             </tr>
@@ -61,20 +69,22 @@
                 </td>
                 <td>
                     <select name="main_forecast_share">
+                        <option value="-1"{% if forecast.main_forecast_share == -1 %} selected{% endif %}>-- wybierz --</option>
                         {% for share in shares %}
-                            <option value="share.pk">{{ share.name }}</option>
+                            <option value="{{ share.pk }}"{% if forecast.main_forecast_share == share.pk %} selected{% endif %}>
+                                {{ share.name }}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
                     <select name="main_forecast_change">
-                        <option value="3">&#11014;</option>
-                        <option value="2">&uArr;</option>
-                        <option value="1">&uarr;</option>
-                        <option value="0" selected>&hArr;</option>
-                        <option value="-1">&darr;</option>
-                        <option value="-2">&dArr;</option>
-                        <option value="-3">&#11015;</option>
+                        <option value="3"{% if forecast.main_forecast_change == 3 %} selected{% endif %}>&#11014;</option>
+                        <option value="2"{% if forecast.main_forecast_change == 2 %} selected{% endif %}>&uArr;</option>
+                        <option value="1"{% if forecast.main_forecast_change == 1 %} selected{% endif %}>&uarr;</option>
+                        <option value="0"{% if forecast.main_forecast_change == 0 %} selected{% endif %}>&hArr;</option>
+                        <option value="-1"{% if forecast.main_forecast_change == -1 %} selected{% endif %}>&darr;</option>
+                        <option value="-2"{% if forecast.main_forecast_change == -2 %} selected{% endif %}>&dArr;</option>
+                        <option value="-3"{% if forecast.main_forecast_change == -3 %} selected{% endif %}>&#11015;</option>
                     </select>
                 </td>
             </tr>
@@ -84,20 +94,22 @@
                 </td>
                 <td>
                     <select name="secondary_forecast_share">
+                        <option value="-1"{% if forecast.main_forecast_share == -1 %} selected{% endif %}>-- wybierz --</option>
                         {% for share in shares %}
-                            <option value="share.pk">{{ share.name }}</option>
+                            <option value="{{ share.pk }}"{% if forecast.secondary_forecast_share == share.pk %} selected{% endif %}>
+                                {{ share.name }}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td>
                     <select name="secondary_forecast_change">
-                        <option value="3">&#11014;</option>
-                        <option value="2">&uArr;</option>
-                        <option value="1">&uarr;</option>
-                        <option value="0" selected>&hArr;</option>
-                        <option value="-1">&darr;</option>
-                        <option value="-2">&dArr;</option>
-                        <option value="-3">&#11015;</option>
+                        <option value="3"{% if forecast.secondary_forecast_change == 3 %} selected{% endif %}>&#11014;</option>
+                        <option value="2"{% if forecast.secondary_forecast_change == 2 %} selected{% endif %}>&uArr;</option>
+                        <option value="1"{% if forecast.secondary_forecast_change == 1 %} selected{% endif %}>&uarr;</option>
+                        <option value="0"{% if forecast.secondary_forecast_change == 0 %} selected{% endif %}>&hArr;</option>
+                        <option value="-1"{% if forecast.secondary_forecast_change == -1 %} selected{% endif %}>&darr;</option>
+                        <option value="-2"{% if forecast.secondary_forecast_change == -2 %} selected{% endif %}>&dArr;</option>
+                        <option value="-3"{% if forecast.secondary_forecast_change == -3 %} selected{% endif %}>&#11015;</option>
                     </select>
                 </td>
             </tr>
@@ -107,19 +119,19 @@
                 </td>
                 <td>
                     <select name="all_forecast_change">
-                        <option value="3">&#11014;</option>
-                        <option value="2">&uArr;</option>
-                        <option value="1">&uarr;</option>
-                        <option value="0" selected>&hArr;</option>
-                        <option value="-1">&darr;</option>
-                        <option value="-2">&dArr;</option>
-                        <option value="-3">&#11015;</option>
+                        <option value="3"{% if forecast.all_forecast_change == 3 %} selected{% endif %}>&#11014;</option>
+                        <option value="2"{% if forecast.all_forecast_change == 2 %} selected{% endif %}>&uArr;</option>
+                        <option value="1"{% if forecast.all_forecast_change == 1 %} selected{% endif %}>&uarr;</option>
+                        <option value="0"{% if forecast.all_forecast_change == 0 %} selected{% endif %}>&hArr;</option>
+                        <option value="-1"{% if forecast.all_forecast_change == -1 %} selected{% endif %}>&darr;</option>
+                        <option value="-2"{% if forecast.all_forecast_change == -2 %} selected{% endif %}>&dArr;</option>
+                        <option value="-3"{% if forecast.all_forecast_change == -3 %} selected{% endif %}>&#11015;</option>
                     </select>
                 </td>
             </tr>
         </table>
 
-        <input type="checkbox" name="finish_turn" value="true"> Zakończ turę
+        <input type="checkbox" name="finish_turn" value="true"> Zakończ rundę
         <br><input type="submit" value="Oblicz">
     </form>
     <hr>

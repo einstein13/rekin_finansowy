@@ -43,11 +43,14 @@ class StartGame(TemplateView):
 
 class TurnCalculator(TemplateView):
     template_name = "turn.html"
+    stock_string_start = "stock_"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = dict(self.request.POST)
         post = flatten_dict(post)
+        print(post)
+        print("- - - - - -")
         post['game'] = self.get_game(post)
         if post['game'] is None:
             context["game"] = None
@@ -57,8 +60,14 @@ class TurnCalculator(TemplateView):
         post['shares'] = self.get_shares()
         post['turn'] = self.get_turn(post)
         post['stocks'] = self.get_stocks(post)
+        post['forecast'] = self.get_forecast(post)
+        self.calculate_players_details(post)
+
+        if 'finish_turn' in post and post['finish_turn'] == "true":
+            self.save_and_finish(post)
 
         print(post)
+        print("- - - - - -")
         context = context | post
         return context
 
@@ -105,13 +114,13 @@ class TurnCalculator(TemplateView):
                 player_id = int(player_id)
                 player_name = post[key]
                 player = self.single_player(player_name, player_id, post['game'])
-                # [player_id, player_name, player_object, player_turn_balance, player_wallet_value]
-                result.append([player_id, player_name, player, 0, 0])
+                # [player_id, player_name, player_object, player_turn_balance, player_spent_value, player_current_value]
+                result.append([player.pk, player_name, player, 0, 0, 0])
         if len(result) == 0:
             game = post['game']
             players = game.players.all()
             for player in players:
-                result.append([player.pk, player.name, 0, 0])
+                result.append([player.pk, player.name, player, 0, 0])
         return result
 
     def get_shares(self):
@@ -144,7 +153,7 @@ class TurnCalculator(TemplateView):
         return [turn, turn.number+1]
 
     def get_stocks(self, post):
-        string_start = "stock_"
+        string_start = self.stock_string_start
         keys = list(post.keys())
         data = {}
         for key in keys:
@@ -152,8 +161,12 @@ class TurnCalculator(TemplateView):
                 data[key] = post[key]
 
         if len(data.keys()) == 0:
-            # no stocks data
-            pass
+            turn = post['turn'][0]
+            stocks = turn.stocks.all()
+            for stock in stocks:
+                key = string_start + str(stock.share_id) + "_" + str(stock.player_id)
+                value = stock.amount
+                data[key] = value
 
         shares = post['shares']
         players = post['players']
@@ -169,6 +182,210 @@ class TurnCalculator(TemplateView):
             result.append(line)
 
         return result
+
+    def get_forecast(self, post):
+        result = {}
+
+        # defaults
+        result['main_forecast_change'] = 0
+        result['secondary_forecast_change'] = 0
+        result['all_forecast_change'] = 0
+        result['main_forecast_share'] = -1
+        result['secondary_forecast_share'] = -1
+
+        if 'all_forecast_change' not in post:
+            return result
+
+        result['main_forecast_change'] = int(post['main_forecast_change'])
+        result['secondary_forecast_change'] = int(post['secondary_forecast_change'])
+        result['all_forecast_change'] = int(post['all_forecast_change'])
+        result['main_forecast_share'] = int(post['main_forecast_share'])
+        result['secondary_forecast_share'] = int(post['secondary_forecast_share'])
+
+        return result
+
+    def calculate_single_stocks_profit(self, forecast, share, stocks_amount):
+        # forecast - dict
+        # share - Share object
+        # stocks_amount - int value
+        if stocks_amount == 0:
+            return 0
+
+        profit_type = forecast["all_forecast_change"]
+        share_pk = share.pk
+        if share_pk == forecast["main_forecast_share"]:
+            profit_type = forecast["main_forecast_change"]
+        elif share_pk == forecast["secondary_forecast_share"]:
+            profit_type = forecast["secondary_forecast_change"]
+
+        single_profit = 0
+        if profit_type == 3:
+            single_profit = share.profit_3up
+        if profit_type == 2:
+            single_profit = share.profit_2up
+        if profit_type == 1:
+            single_profit = share.profit_1up
+        if profit_type == 0:
+            single_profit = share.profit_0
+        if profit_type == -1:
+            single_profit = share.profit_1down
+        if profit_type == -2:
+            single_profit = share.profit_2down
+        if profit_type == -3:
+            single_profit = share.profit_3down
+
+        return single_profit*stocks_amount
+
+    def calculate_single_stocks_spent(self, share, stocks_amount):
+        # share - Share object
+        # stocks_amount - int value
+        if stocks_amount == 0:
+            return 0
+
+        return share.cost*stocks_amount
+
+    def calculate_single_stocks_value(self, forecast, share, stocks_amount):
+        # forecast - dict
+        # share - Share object
+        # stocks_amount - int value
+        if stocks_amount == 0:
+            return 0
+
+        profit_type = forecast["all_forecast_change"]
+        share_pk = share.pk
+        if share_pk == forecast["main_forecast_share"]:
+            profit_type = forecast["main_forecast_change"]
+        elif share_pk == forecast["secondary_forecast_share"]:
+            profit_type = forecast["secondary_forecast_change"]
+
+        single_value = 0
+        if profit_type >= 0:
+            single_value = share.value_up
+        if profit_type < 0:
+            single_value = share.value_down
+
+        return single_value*stocks_amount
+
+    def calculate_players_details(self, post):
+        string_start = self.stock_string_start
+
+        forecast = post['forecast']
+        players = post['players']
+        shares = post['shares']
+
+        for share in shares:
+            for player in players:
+                key = "stock_" + str(share.pk) + "_" + str(player[0])
+                stock = 0
+                if key in post:
+                    stock = post[key]
+                    if stock == "":
+                        stock = 0
+                    else:
+                        stock = int(stock)
+
+                add_profit = self.calculate_single_stocks_profit(forecast, share, stock)
+                add_spent = self.calculate_single_stocks_spent(share, stock)
+                add_value = self.calculate_single_stocks_value(forecast, share, stock)
+                player[3] += add_profit
+                player[4] += add_spent
+                player[5] += add_value
+        return
+
+    def save_turn(self, post):
+        new_turn = Turn()
+        new_turn.game = post['game']
+        new_turn.number = post['turn'][1]
+        new_turn.save()
+        post['turn'][0] = new_turn
+        post['turn'][1] += 1
+        return new_turn
+
+    def save_one_stock(self, key, value, turn):
+        if value == "" or value == "0":
+            return False
+
+        amount = int(value)
+
+        splitted = key.split("_")
+        share_id = int(splitted[1])
+        player_id = int(splitted[2])
+
+        player = Player.objects.get(pk=player_id)
+        if player.game_id != turn.game_id:
+            return False
+
+        share = Share.objects.get(pk=share_id)
+
+        stock = Stock.objects.filter(turn=turn, player=player, share=share)
+        if stock.count() == 0:
+            # new record
+            stock = Stock()
+            stock.player = player
+            stock.turn = turn
+            stock.share = share
+            stock.amount = amount
+            stock.save()
+            return True
+
+        # exsting record
+        stock = stock[0]
+        stock.amount= amount
+        stock.save()
+
+        return True
+
+    def save_stocks(self, post, turn):
+        string_start = self.stock_string_start
+        keys = list(post.keys())
+
+        for key in keys:
+            if str(key).startswith(string_start):
+                self.save_one_stock(key, post[key], turn)
+
+        return
+
+    def get_share(self, share_pk):
+        return Share.objects.get(pk=int(share_pk))
+
+    def save_forecast(self, post, turn):
+
+        forecast = Forecast.objects.filter(turn=turn)
+        if forecast.count() == 0:
+            forecast = Forecast()
+            forecast.turn = turn
+        else:
+            forecast = forecast[0]
+
+        if post['main_forecast_share'] != "-1":
+            forecast.main_company = self.get_share(post['main_forecast_share'])
+        if post['secondary_forecast_share'] != "-1":
+            forecast.secondary_company = self.get_share(post['secondary_forecast_share'])
+        forecast.all_forecast = post['all_forecast_change']
+        forecast.main_forecast = post['main_forecast_change']
+        forecast.secondary_forecast = post['secondary_forecast_change']
+        forecast.save()
+
+        # clear data
+        post['forecast']['main_forecast_change'] = 0
+        post['forecast']['secondary_forecast_change'] = 0
+        post['forecast']['all_forecast_change'] = 0
+        post['forecast']['main_forecast_share'] = -1
+        post['forecast']['secondary_forecast_share'] = -1
+        return True
+
+    def save_and_finish(self, post):
+        # create new turn
+        new_turn = self.save_turn(post)
+
+        # save stocks
+        self.save_stocks(post, new_turn)
+
+        # save forecast
+        self.save_forecast(post, new_turn)
+
+        return
+
 
 class GameEnd(TemplateView):
     template_name = "game_end.html"

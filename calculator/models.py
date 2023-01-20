@@ -102,9 +102,9 @@ class Forecast(models.Model):
     # all_company = models.ForeignKey('Share', on_delete=models.CASCADE,
     #         related_name='forecast0')
     main_company = models.ForeignKey('Share', on_delete=models.CASCADE,
-            related_name='forecast1')
+            related_name='forecast1', null=True, blank=True)
     secondary_company = models.ForeignKey('Share', on_delete=models.CASCADE,
-            related_name='forecast2')
+            related_name='forecast2', null=True, blank=True)
     all_forecast = models.IntegerField(default=0)
     main_forecast = models.IntegerField(default=0)
     secondary_forecast = models.IntegerField(default=0)
