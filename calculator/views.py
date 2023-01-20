@@ -18,6 +18,35 @@ def flatten_dict(dictionary):
 class Home(TemplateView):
     template_name = "home.html"
 
+    def get_players(self, game):
+        players = game.players.all()
+        result = ""
+        for player in players:
+            if result is not "":
+                result += ", "
+            result += player.name
+        return result
+
+    def get_latest_games(self):
+        g = Game.objects.all()
+        g = g.order_by('-start_date')
+        if g.count() > 5:
+            g = g[:5]
+
+        result = []
+        for el in g:
+            date = el.start_date.strftime("%Y-%m-%d %H:%M:%S")
+            link = el.link
+            players = self.get_players(el)
+            result.append([date, link, players])
+        return result
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['games'] = self.get_latest_games()
+
+        return context
+
 
 class StartGame(TemplateView):
     template_name = "start.html"
@@ -120,7 +149,7 @@ class TurnCalculator(TemplateView):
             game = post['game']
             players = game.players.all()
             for player in players:
-                result.append([player.pk, player.name, player, 0, 0])
+                result.append([player.pk, player.name, player, 0, 0, 0])
         return result
 
     def get_shares(self):

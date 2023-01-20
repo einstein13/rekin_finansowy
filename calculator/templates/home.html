@@ -7,6 +7,22 @@
         Ile graczy chce zagrać?<br>
         <input type="number" name="players" min="2" max="6"><br>
         <input type="submit" value="Zacznij!">
+        <hr>
+        <h2>Albo wybierz jedną z ostatnich gier:</h2>
+        <table border="1">
+            <tr>
+                <th>Data</th>
+                <th>Gra</th>
+                <th>Gracze</th>
+            </tr>
+            {% for el in games %}
+                <tr>
+                    <td>{{ el.0 }}</td>
+                    <td><a href="{% url 'restore' el.1 %}">{{ el.1 }}</a></td>
+                    <td>{{ el.2 }}</td>
+                </tr>
+            {% endfor %}
+        </table>
     </form>
 
 {% endblock %}
