@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 
 from calculator.models import Game, Player, Turn, Share, Stock, Forecast
+from calculator.utils import PaycheckCalculator, PaycheckPlot
 
 
 def flatten_dict(dictionary):
@@ -78,8 +79,8 @@ class TurnCalculator(TemplateView):
         context = super().get_context_data(**kwargs)
         post = dict(self.request.POST)
         post = flatten_dict(post)
-        print(post)
-        print("- - - - - -")
+        # print(post)
+        # print("- - - - - -")
         post['game'] = self.get_game(post)
         if post['game'] is None:
             context["game"] = None
@@ -95,8 +96,8 @@ class TurnCalculator(TemplateView):
         if 'finish_turn' in post and post['finish_turn'] == "true":
             self.save_and_finish(post)
 
-        print(post)
-        print("- - - - - -")
+        # print(post)
+        # print("- - - - - -")
         context = context | post
         return context
 
@@ -116,11 +117,8 @@ class TurnCalculator(TemplateView):
     def get_game(self, post):
         if 'game_link' not in post:
             return None
-        link = post['game_link']
-        g = Game.objects.filter(link=link)
-        if g.count() == 0:
-            return None
-        return g[0]
+        pc = PaycheckCalculator()
+        return pc.get_game(post['game_link'])
 
     def single_player(self, player_name, player_order, game):
         p = Player.objects.filter(game=game, name=player_name)
@@ -146,10 +144,9 @@ class TurnCalculator(TemplateView):
                 # [player_id, player_name, player_object, player_turn_balance, player_spent_value, player_current_value]
                 result.append([player.pk, player_name, player, 0, 0, 0])
         if len(result) == 0:
-            game = post['game']
-            players = game.players.all()
-            for player in players:
-                result.append([player.pk, player.name, player, 0, 0, 0])
+            pc = PaycheckCalculator()
+            players = pc.get_players(post['game'])
+            result = pc.initialize_players(players)
         return result
 
     def get_shares(self):
@@ -421,6 +418,19 @@ class GameEnd(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        pc = PaycheckCalculator()
+
+        game_link = kwargs['link']
+        context['game'] = pc.get_game(game_link)
+        context['players'] = pc.get_players(context['game'])
+        context['turns'] = pc.get_turns(context['game'])
+
+        pp = PaycheckPlot()
+        context['plot'] = pp.plot_values([[[], []],[[], []]])
+
+
+        print(context)
         return context
 
     def post(self, request, **kwargs):
