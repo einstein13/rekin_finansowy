@@ -96,9 +96,8 @@ class TurnCalculator(TemplateView):
         if 'finish_turn' in post and post['finish_turn'] == "true":
             self.save_and_finish(post)
 
-        # print(post)
-        # print("- - - - - -")
-        context = context | post
+        for key in post.keys():
+            context[key] = post[key]
         return context
 
     def post(self, request, **kwargs):
