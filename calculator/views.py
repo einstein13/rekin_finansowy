@@ -145,8 +145,7 @@ class TurnCalculator(TemplateView):
                 result.append([player.pk, player_name, player, 0, 0, 0])
         if len(result) == 0:
             pc = PaycheckCalculator()
-            players = pc.get_players(post['game'])
-            result = pc.initialize_players(players)
+            result = pc.initialize_players(post['game'])
         return result
 
     def get_shares(self):
@@ -186,7 +185,7 @@ class TurnCalculator(TemplateView):
             if str(key).startswith(string_start):
                 data[key] = post[key]
 
-        if len(data.keys()) == 0:
+        if len(data.keys()) == 0 and post['turn'][0] is not None:
             turn = post['turn'][0]
             stocks = turn.stocks.all()
             for stock in stocks:
@@ -418,7 +417,7 @@ class GameEnd(TemplateView):
 
     def extract_winner(self, time_results):
         if len(time_results) == 0:
-            return "gra się jeszcze nie rozpoczęła"
+            return "brak"
         result = ["", 0]
         last_turn = time_results[-1]
         for el in last_turn:

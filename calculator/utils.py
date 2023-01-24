@@ -116,7 +116,7 @@ class PaycheckPlot(object):
             ax.plot(turns, val_list, '-o', label=player)
 
         # ax.set_title('By date')
-        ax.set_ylabel("Wartość portfela")
+        ax.set_ylabel("Wartość portfela akcji")
         ax.set_xlabel("Tura")
         ax.legend()
 

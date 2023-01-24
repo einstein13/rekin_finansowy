@@ -3,11 +3,12 @@
 {% block content %}
     <h1>Zakończono grę {{ game.link }}</h1>
 
-    Wygrał gracz: {{ winner }}
+    Wygrał gracz: {% if winner == "brak" %}<i>gra się jeszcze nie rozpoczęła</i>
+    {% else %}{{ winner }}{% endif %}
     <br>
 
     {% if plot == "" %}
-        <h3>No image generated</h3>
+        <br>(<i>brak wykresu</i>)<br><br>
         {{ plot }}
     {% else %}
         <img src='data:image/png;base64,{{ plot }}'>
@@ -36,5 +37,11 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+        {% if winner == "brak" %}
+            <tr><td>0</td>
+            {% for player in players %}
+                <td>0</td>
+            {% endfor %}
+        {% endif %}
     </table>
 {% endblock %}
