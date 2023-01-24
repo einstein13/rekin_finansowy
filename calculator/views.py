@@ -23,7 +23,7 @@ class Home(TemplateView):
         players = game.players.all()
         result = ""
         for player in players:
-            if result is not "":
+            if result != "":
                 result += ", "
             result += player.name
         return result
