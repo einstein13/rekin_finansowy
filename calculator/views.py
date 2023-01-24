@@ -416,6 +416,17 @@ class TurnCalculator(TemplateView):
 class GameEnd(TemplateView):
     template_name = "game_end.html"
 
+    def extract_winner(self, time_results):
+        if len(time_results) == 0:
+            return "gra się jeszcze nie rozpoczęła"
+        result = ["", 0]
+        last_turn = time_results[-1]
+        for el in last_turn:
+            if el[4] > result[1]:
+                result[1] = el[4]
+                result[0] = el[1]
+        return "%s (%d)" % tuple(result)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -425,12 +436,15 @@ class GameEnd(TemplateView):
         context['game'] = pc.get_game(game_link)
         context['players'] = pc.get_players(context['game'])
         context['turns'] = pc.get_turns(context['game'])
+        context['time_results'] = pc.get_results(context['game'])
 
-        pp = PaycheckPlot()
-        context['plot'] = pp.plot_values([[[], []],[[], []]])
-
+        context['winner'] = self.extract_winner(context['time_results'])
 
         print(context)
+        pp = PaycheckPlot()
+        context['plot'] = pp.plot_values(context['time_results'])
+
+
         return context
 
     def post(self, request, **kwargs):

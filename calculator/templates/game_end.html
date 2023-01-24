@@ -3,10 +3,38 @@
 {% block content %}
     <h1>Zakończono grę {{ game.link }}</h1>
 
+    Wygrał gracz: {{ winner }}
+    <br>
+
     {% if plot == "" %}
-    	<h3>No image generated</h3>
-    	{{ plot }}
+        <h3>No image generated</h3>
+        {{ plot }}
     {% else %}
-    	<img src='data:image/png;base64,{{ plot }}'>
+        <img src='data:image/png;base64,{{ plot }}'>
     {% endif %}
+
+    <table border="1">
+        <tr>
+            <th>
+                Tura
+            </th>
+            {% for player in players %}
+                <th>
+                    {{ player.name }}
+                </th>
+            {% endfor %}
+        </tr>
+        {% for single in time_results %}
+            <tr>
+                <td>
+                    {{ forloop.counter }}
+                </td>
+                {% for player in single %}
+                    <td>
+                        {{ player.4 }}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
 {% endblock %}
