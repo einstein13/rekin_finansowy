@@ -43,6 +43,9 @@ data = [
 def calculate_to_save(single_data):
     result = {}
     basic_value = single_data['cost']
+    value_1updown = basic_value//8
+    if(value_1updown % 50):
+        value_1updown -= 25
 
     result['name'] = single_data['name']
     result['cost'] = basic_value
@@ -51,9 +54,9 @@ def calculate_to_save(single_data):
     result['value_down'] = basic_value//2
     result['profit_3up'] = basic_value//2
     result['profit_2up'] = basic_value//4
-    result['profit_1up'] = basic_value//8
+    result['profit_1up'] = value_1updown
     result['profit_0'] = 0
-    result['profit_1down'] = -basic_value//8
+    result['profit_1down'] = -value_1updown
     result['profit_2down'] = -basic_value//4
     result['profit_3down'] = -basic_value//2
 
